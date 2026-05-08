@@ -1,0 +1,21 @@
+{
+  "name": "lomi-payment-integration-reference",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Reference integration for lomi. checkout sessions, card form flow, and webhooks",
+  "main": "server/index.js",
+  "packageManager": "pnpm@9.15.5",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "dev": "node --watch server/index.js",
+    "start": "node server/index.js",
+    "verify": "node --check server/index.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2"
+  }
+}

@@ -1,0 +1,9 @@
+[submodule "woo"]
+	path = woo
+	url = https://github.com/lomiafrica/woo.git
+[submodule "prestashop"]
+	path = prestashop
+	url = https://github.com/lomiafrica/prestashop.git
+[submodule "magento"]
+	path = magento
+	url = https://github.com/lomiafrica/magento.git

@@ -7,3 +7,12 @@
 [submodule "magento"]
 	path = magento
 	url = https://github.com/lomiafrica/magento.git
+[submodule "shopify"]
+	path = shopify
+	url = https://github.com/lomiafrica/shopify.git
+[submodule "bubble"]
+	path = bubble
+	url = https://github.com/lomiafrica/bubble.git
+[submodule "odoo"]
+	path = odoo
+	url = https://github.com/lomiafrica/odoo.git

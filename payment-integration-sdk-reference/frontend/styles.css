@@ -7,6 +7,8 @@ body {
   margin: 0;
   background: #f6f7fb;
   color: #1f2937;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 main {

@@ -203,11 +203,20 @@ log "6/8 Validating test/live webhook secret switching"
 
 search_must_exist "test_webhook_secret|testmode.*webhook_secret|LOMI_TEST_WEBHOOK_SECRET" "$PLUGINS_DIR/magento"
 search_must_exist "live_webhook_secret|LOMI_LIVE_WEBHOOK_SECRET" "$PLUGINS_DIR/magento"
+search_must_exist "REFUND_COMPLETED" "$PLUGINS_DIR/magento/Controller/Payment/Webhook.php"
 search_must_exist "getWebhookSecret|LOMI_TEST_WEBHOOK_SECRET|LOMI_LIVE_WEBHOOK_SECRET" "$PLUGINS_DIR/prestashop"
 search_must_exist "test_webhook_secret|live_webhook_secret|webhook_secret" "$PLUGINS_DIR/woo/includes/class-wc-gateway-lomi.php"
 search_must_exist "sandbox\.api\.lomi\.africa|api\.lomi\.africa" "$PLUGINS_DIR/magento/Gateway/LomiApiClient.php"
 search_must_exist "sandbox\.api\.lomi\.africa|api\.lomi\.africa" "$PLUGINS_DIR/prestashop/lomi/classes/LomiApiClient.php"
 echo "PASS: test/live API base URLs and webhook secret fields detected."
+
+log "6b/8 Validating abandon recovery assets"
+
+file_must_exist "$PLUGINS_DIR/woo/assets/js/checkout-abandon.js"
+file_must_exist "$PLUGINS_DIR/magento/view/frontend/web/js/checkout-abandon.js"
+file_must_exist "$PLUGINS_DIR/prestashop/lomi/views/js/checkout-abandon.js"
+file_must_exist "$PLUGINS_DIR/prestashop/lomi/controllers/front/abandon.php"
+echo "PASS: abandon recovery assets present on Woo, Magento, and PrestaShop."
 
 log "7/8 Scanning plugin trees for broken image path references"
 python3 "$SCRIPT_DIR/scan_broken_images.py"

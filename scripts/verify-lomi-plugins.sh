@@ -2,7 +2,8 @@
 
 set -euo pipefail
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PLUGINS_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 RUN_RUNTIME=0
 MAGENTO_ROOT=""
 
@@ -12,15 +13,18 @@ Usage:
   ./verify-lomi-plugins.sh [--run-runtime] [--magento-root /path/to/magento]
 
 What it does:
-  1) Verifies zero legacy brand remnants in this repository.
-  2) Verifies Magento/Prestashop/Woo plugin code references Lomi API contract.
-  3) Verifies plugin source string-literal image paths resolve to real files.
-  4) Checks Magento rename targets are present.
-  5) Optionally runs Magento runtime checks if --run-runtime is provided.
+  1) Verifies zero legacy brand remnants under apps/plugins/.
+  2) Verifies Magento/PrestaShop/Woo/Shopify reference the Lomi API contract.
+  3) Verifies integration_source attribution per platform.
+  4) Verifies XOF amount handling and checkout branding assets.
+  5) Verifies test/live webhook secret switching patterns.
+  6) Scans plugin trees for broken image path references.
+  7) Checks Magento rename targets are present.
+  8) Optionally runs Magento runtime checks if --run-runtime is provided.
 
 Notes:
   - --run-runtime requires a valid Magento installation path via --magento-root.
-  - Prestashop/Woo runtime checks are environment-specific and are printed as next-step commands.
+  - PrestaShop/Woo runtime checks are environment-specific and are printed as next-step commands.
 EOF
 }
 
@@ -29,7 +33,9 @@ log() {
 }
 
 SEARCH_TOOL=""
-LEGACY_BRAND_PATTERN='pay'"stack"'|Pay'"stack"'|P'"stk"
+# Built from parts so the legacy vendor name never appears as one literal.
+_ps="$(printf '%s%s' 'pay' 'stack')"
+LEGACY_BRAND_PATTERN="${_ps}|Pay${_ps}|Pstk"
 
 search_has_matches() {
   local pattern="$1"
@@ -62,7 +68,7 @@ search_must_exist() {
   local pattern="$1"
   local path="$2"
   if [[ "$SEARCH_TOOL" == "rg" ]]; then
-    rg -n \
+    rg -q \
       --glob '!**/node_modules/**' \
       --glob '!**/dist/**' \
       --glob '!**/.next/**' \
@@ -70,9 +76,9 @@ search_must_exist() {
       --glob '!**/coverage/**' \
       --glob '!**/.cursor/**' \
       --glob '!verify-lomi-plugins.sh' \
-      "$pattern" "$path" >/dev/null
+      "$pattern" "$path"
   else
-    grep -RInE \
+    grep -RqE \
       --exclude-dir=.git \
       --exclude-dir=node_modules \
       --exclude-dir=dist \
@@ -81,7 +87,15 @@ search_must_exist() {
       --exclude-dir=coverage \
       --exclude-dir=.cursor \
       --exclude=verify-lomi-plugins.sh \
-      "$pattern" "$path" >/dev/null
+      "$pattern" "$path"
+  fi
+}
+
+file_must_exist() {
+  local file="$1"
+  if [[ ! -f "$file" ]]; then
+    echo "FAIL: missing required file: $file"
+    exit 1
   fi
 }
 
@@ -116,43 +130,95 @@ else
   exit 1
 fi
 
-cd "$ROOT_DIR"
-
-log "1/5 Checking for legacy brand remnants in repo"
-if search_has_matches "$LEGACY_BRAND_PATTERN" .; then
+log "1/8 Checking for legacy brand remnants in apps/plugins"
+if search_has_matches "$LEGACY_BRAND_PATTERN" "$PLUGINS_DIR"; then
   echo
   echo "FAIL: Found remaining legacy brand references."
   exit 1
 fi
 echo "PASS: No legacy brand references found."
 
-log "2/5 Validating Lomi API contract references in plugins"
+log "2/8 Validating Lomi API contract references in plugins"
 
 echo "- Magento"
 search_must_exist "POST.*checkout-sessions|/checkout-sessions|X-API-Key|X-Lomi-Signature|X-Lomi-Event|api\.lomi\.africa|sandbox\.api\.lomi\.africa" \
-  "$ROOT_DIR/apps/plugins/magento"
+  "$PLUGINS_DIR/magento"
 echo "  PASS"
 
-echo "- Prestashop"
+echo "- PrestaShop"
 search_must_exist "/checkout-sessions|X-API-Key|X-Lomi-Signature|X-Lomi-Event|api\.lomi\.africa|sandbox\.api\.lomi\.africa" \
-  "$ROOT_DIR/apps/plugins/prestashop"
+  "$PLUGINS_DIR/prestashop"
 echo "  PASS"
 
 echo "- Woo"
 search_must_exist "/checkout-sessions|X-API-Key|X-Lomi-Signature|X-Lomi-Event|api\.lomi\.africa|sandbox\.api\.lomi\.africa" \
-  "$ROOT_DIR/apps/plugins/woo"
+  "$PLUGINS_DIR/woo"
 echo "  PASS"
 
-log "3/5 Scanning plugin trees for broken image path references"
-python3 "$ROOT_DIR/apps/plugins/scripts/scan_broken_images.py"
+echo "- Shopify"
+search_must_exist "/checkout-sessions|integration_source|api\.lomi\.africa|sandbox\.api\.lomi\.africa" \
+  "$PLUGINS_DIR/shopify/app"
+echo "  PASS"
 
-log "4/5 Checking Magento rename targets are present"
+log "3/8 Validating integration_source attribution (must match DB enum)"
+
+echo "- Woo → woocommerce"
+search_must_exist "'integration_source'[[:space:]]*=>[[:space:]]*'woocommerce'|integration_source:[[:space:]]*'woocommerce'" \
+  "$PLUGINS_DIR/woo"
+echo "  PASS"
+
+echo "- PrestaShop → prestashop"
+search_must_exist "'integration_source'[[:space:]]*=>[[:space:]]*'prestashop'" \
+  "$PLUGINS_DIR/prestashop"
+echo "  PASS"
+
+echo "- Magento → magento"
+search_must_exist "'integration_source'[[:space:]]*=>[[:space:]]*'magento'" \
+  "$PLUGINS_DIR/magento"
+echo "  PASS"
+
+echo "- Shopify → shopify"
+search_must_exist 'integration_source:[[:space:]]*"shopify"' \
+  "$PLUGINS_DIR/shopify/app"
+echo "  PASS"
+
+log "4/8 Validating XOF amount handling (whole francs, not minor units)"
+
+search_must_exist "=== 'XOF'" "$PLUGINS_DIR/magento/Gateway/LomiApiClient.php"
+search_must_exist "=== 'XOF'" "$PLUGINS_DIR/prestashop/lomi/lomi.php"
+search_must_exist "'XOF' ===" "$PLUGINS_DIR/woo/includes/class-wc-gateway-lomi.php"
+echo "PASS: XOF special-casing present in Magento, PrestaShop, and Woo."
+
+log "5/8 Validating checkout branding assets"
+
+file_must_exist "$PLUGINS_DIR/magento/view/frontend/web/css/checkout-branding.css"
+file_must_exist "$PLUGINS_DIR/magento/view/frontend/web/images/pay-with-lomi.webp"
+file_must_exist "$PLUGINS_DIR/prestashop/lomi/views/css/checkout-branding.css"
+file_must_exist "$PLUGINS_DIR/prestashop/lomi/views/img/pay-with-lomi.webp"
+file_must_exist "$PLUGINS_DIR/woo/assets/css/checkout-branding.css"
+search_must_exist "wc-lomi-checkout-branding" "$PLUGINS_DIR/woo"
+echo "PASS: branding CSS and pay-with image present on Magento, PrestaShop, and Woo."
+
+log "6/8 Validating test/live webhook secret switching"
+
+search_must_exist "test_webhook_secret|testmode.*webhook_secret|LOMI_TEST_WEBHOOK_SECRET" "$PLUGINS_DIR/magento"
+search_must_exist "live_webhook_secret|LOMI_LIVE_WEBHOOK_SECRET" "$PLUGINS_DIR/magento"
+search_must_exist "getWebhookSecret|LOMI_TEST_WEBHOOK_SECRET|LOMI_LIVE_WEBHOOK_SECRET" "$PLUGINS_DIR/prestashop"
+search_must_exist "test_webhook_secret|live_webhook_secret|webhook_secret" "$PLUGINS_DIR/woo/includes/class-wc-gateway-lomi.php"
+search_must_exist "sandbox\.api\.lomi\.africa|api\.lomi\.africa" "$PLUGINS_DIR/magento/Gateway/LomiApiClient.php"
+search_must_exist "sandbox\.api\.lomi\.africa|api\.lomi\.africa" "$PLUGINS_DIR/prestashop/lomi/classes/LomiApiClient.php"
+echo "PASS: test/live API base URLs and webhook secret fields detected."
+
+log "7/8 Scanning plugin trees for broken image path references"
+python3 "$SCRIPT_DIR/scan_broken_images.py"
+
+log "8/8 Checking Magento rename targets are present"
 search_must_exist "Lomi_Payments|Lomi\\\\Payments|payment/lomi|/lomi/payment/" \
-  "$ROOT_DIR/apps/plugins/magento"
+  "$PLUGINS_DIR/magento"
 echo "PASS: Magento rename targets detected."
 
 if [[ "$RUN_RUNTIME" -eq 1 ]]; then
-  log "5/5 Running Magento runtime commands"
+  log "Optional: running Magento runtime commands"
   if [[ -z "$MAGENTO_ROOT" ]]; then
     echo "FAIL: --run-runtime requires --magento-root /path/to/magento"
     exit 1
@@ -172,16 +238,16 @@ if [[ "$RUN_RUNTIME" -eq 1 ]]; then
   php "$MAGENTO_ROOT/bin/magento" cache:flush
   echo "PASS: Magento runtime commands completed."
 else
-  log "5/5 Runtime checks skipped"
   cat <<'EOF'
-Run with runtime checks when ready:
-  ./verify-lomi-plugins.sh --run-runtime --magento-root /absolute/path/to/magento
 
-Then do plugin-specific end-to-end tests:
-  - Magento: place order -> hosted redirect -> callback -> webhook replay.
-  - Prestashop: same flow in Presta environment.
-  - Woo: same flow in Woo environment.
+Runtime checks skipped. Run end-to-end in each stack:
+  - Magento:  apps/plugins/magento/dev (Docker) — place order, webhook, abandon flow
+  - PrestaShop: docker-compose in apps/plugins/prestashop
+  - Woo: wp-env or staging store with test + live keys
+
+Optional Magento runtime:
+  ./verify-lomi-plugins.sh --run-runtime --magento-root /absolute/path/to/magento
 EOF
 fi
 
-log "All automated checks passed."
+log "All automated plugin checks passed."

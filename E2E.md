@@ -76,6 +76,28 @@ Optional runtime verify:
 
 ---
 
+## Bubble
+
+**Environment:** Bubble app (version-test) + lomi. sandbox keys.
+
+1. Plugins → lomi. → paste test API secret + webhook secret (Development).
+2. Workflow: **Create checkout session** (with `bubble_thing_id`) → **Mark checkout redirect** → **Redirect to checkout** (or **lomi. Pay button**).
+3. Pay in hosted sandbox checkout → land on `success_url` with `session_id`.
+4. Success page: **Complete if paid** → if `paid`, mark Thing paid; else **Abandon checkout**.
+5. Webhook API workflow: **Verify and parse webhook** → **On payment succeeded** → update Thing (idempotent).
+6. Abandon: start checkout → browser Back → `lomi:checkout-abandon` / unpaid Thing.
+7. Refund: webhook branch **On refund completed** → update Thing / note.
+8. Confirm dashboard shows `integration_source: bubble`.
+
+Local helpers:
+
+```bash
+LOMI_API_KEY=lomi_sk_test_... node apps/plugins/bubble/scripts/smoke-test.mjs
+apps/plugins/scripts/verify-lomi-plugins.sh
+```
+
+---
+
 ## Release tags
 
 | Platform | Tag pattern | Workflow |
@@ -83,3 +105,4 @@ Optional runtime verify:
 | Woo | `woo-v*` | `woo-release.yml` |
 | Magento | `magento-v*` | `magento-release.yml` |
 | PrestaShop | `prestashop-v*` | `prestashop-release.yml` |
+| Bubble | `bubble-v*` | `bubble-release.yml` |

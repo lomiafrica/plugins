@@ -160,6 +160,11 @@ search_must_exist "/checkout-sessions|integration_source|api\.lomi\.africa|sandb
   "$PLUGINS_DIR/shopify/app"
 echo "  PASS"
 
+echo "- Bubble"
+search_must_exist "/checkout-sessions|X-API-Key|X-Lomi-Signature|api\.lomi\.africa|sandbox\.api\.lomi\.africa" \
+  "$PLUGINS_DIR/bubble"
+echo "  PASS"
+
 log "3/8 Validating integration_source attribution (must match DB enum)"
 
 echo "- Woo → woocommerce"
@@ -182,12 +187,18 @@ search_must_exist 'integration_source:[[:space:]]*"shopify"' \
   "$PLUGINS_DIR/shopify/app"
 echo "  PASS"
 
+echo "- Bubble → bubble"
+search_must_exist "integration_source: 'bubble'|integration_source: \"bubble\"" \
+  "$PLUGINS_DIR/bubble"
+echo "  PASS"
+
 log "4/8 Validating XOF amount handling (whole francs, not minor units)"
 
 search_must_exist "=== 'XOF'" "$PLUGINS_DIR/magento/Gateway/LomiApiClient.php"
 search_must_exist "=== 'XOF'" "$PLUGINS_DIR/prestashop/lomi/lomi.php"
 search_must_exist "'XOF' ===" "$PLUGINS_DIR/woo/includes/class-wc-gateway-lomi.php"
-echo "PASS: XOF special-casing present in Magento, PrestaShop, and Woo."
+search_must_exist "code === 'XOF'" "$PLUGINS_DIR/bubble/lib/lomi-server-helpers.js"
+echo "PASS: XOF special-casing present in Magento, PrestaShop, Woo, and Bubble."
 
 log "5/8 Validating checkout branding assets"
 
@@ -197,7 +208,11 @@ file_must_exist "$PLUGINS_DIR/prestashop/lomi/views/css/checkout-branding.css"
 file_must_exist "$PLUGINS_DIR/prestashop/lomi/views/img/pay-with-lomi.webp"
 file_must_exist "$PLUGINS_DIR/woo/assets/css/checkout-branding.css"
 search_must_exist "wc-lomi-checkout-branding" "$PLUGINS_DIR/woo"
-echo "PASS: branding CSS and pay-with image present on Magento, PrestaShop, and Woo."
+file_must_exist "$PLUGINS_DIR/bubble/assets/images/pay-with-lomi.webp"
+file_must_exist "$PLUGINS_DIR/bubble/assets/images/secured-by-lomi.webp"
+file_must_exist "$PLUGINS_DIR/bubble/assets/js/lomi-embed.js"
+file_must_exist "$PLUGINS_DIR/bubble/elements/LOM-branding/params.json"
+echo "PASS: branding CSS and pay-with image present on Magento, PrestaShop, Woo, and Bubble."
 
 log "6/8 Validating test/live webhook secret switching"
 
@@ -207,6 +222,7 @@ search_must_exist "REFUND_COMPLETED" "$PLUGINS_DIR/magento/Controller/Payment/We
 search_must_exist "getWebhookSecret|LOMI_TEST_WEBHOOK_SECRET|LOMI_LIVE_WEBHOOK_SECRET" "$PLUGINS_DIR/prestashop"
 search_must_exist "test_webhook_secret|live_webhook_secret|webhook_secret" "$PLUGINS_DIR/woo/includes/class-wc-gateway-lomi.php"
 search_must_exist "sandbox\.api\.lomi\.africa|api\.lomi\.africa" "$PLUGINS_DIR/magento/Gateway/LomiApiClient.php"
+search_must_exist "sandbox\.api\.lomi\.africa|api\.lomi\.africa" "$PLUGINS_DIR/bubble/actions/LOM-create_session/server.js"
 search_must_exist "sandbox\.api\.lomi\.africa|api\.lomi\.africa" "$PLUGINS_DIR/prestashop/lomi/classes/LomiApiClient.php"
 echo "PASS: test/live API base URLs and webhook secret fields detected."
 
@@ -216,7 +232,10 @@ file_must_exist "$PLUGINS_DIR/woo/assets/js/checkout-abandon.js"
 file_must_exist "$PLUGINS_DIR/magento/view/frontend/web/js/checkout-abandon.js"
 file_must_exist "$PLUGINS_DIR/prestashop/lomi/views/js/checkout-abandon.js"
 file_must_exist "$PLUGINS_DIR/prestashop/lomi/controllers/front/abandon.php"
-echo "PASS: abandon recovery assets present on Woo, Magento, and PrestaShop."
+file_must_exist "$PLUGINS_DIR/bubble/assets/js/checkout-abandon.js"
+file_must_exist "$PLUGINS_DIR/bubble/actions/LOM-parse_webhook/server.js"
+search_must_exist "PAYMENT_SUCCEEDED" "$PLUGINS_DIR/bubble"
+echo "PASS: abandon recovery assets present on Woo, Magento, PrestaShop, and Bubble."
 
 log "7/8 Scanning plugin trees for broken image path references"
 python3 "$SCRIPT_DIR/scan_broken_images.py"

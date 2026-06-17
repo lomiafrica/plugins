@@ -24,6 +24,7 @@ Each directory is a submodule pointing at its own repository:
 These live at the repository root (not submodules). Use them as copy-paste examples for merchants and partners:
 
 - **[direct-charge-integration-reference](./direct-charge-integration-reference)**: Direct charges (`POST /charge/*`) with Payment Elements for cards.
+- **[lomi-edupay-connector](./lomi-edupay-connector)**: EduPay (Yele Group) partner connector — direct charges with normal → Network migration path.
 - **[payment-integration-reference](./payment-integration-reference)**: Hosted checkout sessions via the raw HTTP API.
 - **[payment-integration-sdk-reference](./payment-integration-sdk-reference)**: Hosted checkout sessions with `@lomi./sdk` and `@lomi./embed`.
 

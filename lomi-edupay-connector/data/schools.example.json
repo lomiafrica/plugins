@@ -1,0 +1,13 @@
+{
+  "schools": {
+    "school_pilot_001": {
+      "name": "Pilot School — Phase 1 (normal merchant)",
+      "use_network_settlement": false
+    },
+    "school_network_001": {
+      "name": "Network Pilot School — Phase 2",
+      "use_network_settlement": true,
+      "member_account_id": "acct_REPLACE_WITH_SANDBOX_MEMBER_ID"
+    }
+  }
+}

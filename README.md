@@ -2,44 +2,55 @@
 
 Welcome to the central repository for **lomi.** payment plugins.
 
-This repository serves as the entry point for all e-commerce integrations (WooCommerce, PrestaShop, Magento, Shopify, etc.) that enable secure payments via the lomi. API.
+This repository is the entry point for e-commerce integrations (WooCommerce, PrestaShop, Magento, Shopify, etc.) and reference apps that demonstrate the lomi. API.
 
-## Supported Platforms
+## Repository layout
 
-The plugins are organized as Git submodules. Each directory corresponds to a specific integration:
+### Platform plugins (Git submodules)
 
-- **[WooCommerce](./woo)**: Payment plugin for WordPress/WooCommerce stores.
-- **[PrestaShop](./prestashop)**: Official payment module for PrestaShop.
-- **[Magento](./magento)**: Integration for Adobe Commerce (Magento 2).
-- **[Shopify](./shopify)**: Shopify payment application.
-- **[Odoo](./odoo)**: Payment module for the Odoo ERP.
-- **[Bubble](./bubble)**: Integration for Bubble no-code applications.
+Each directory is a submodule pointing at its own repository:
 
-## Installation and Cloning
+| Directory | Platform | Submodule repo | Access |
+| --- | --- | --- | --- |
+| [woo](./woo) | WooCommerce | [lomiafrica/woo](https://github.com/lomiafrica/woo) | Public |
+| [prestashop](./prestashop) | PrestaShop | [lomiafrica/prestashop](https://github.com/lomiafrica/prestashop) | Public |
+| [magento](./magento) | Adobe Commerce (Magento 2) | [lomiafrica/magento](https://github.com/lomiafrica/magento) | Public |
+| [shopify](./shopify) | Shopify | [lomiafrica/shopify](https://github.com/lomiafrica/shopify) | Private (org access required) |
+| [bubble](./bubble) | Bubble.io | [lomiafrica/bubble](https://github.com/lomiafrica/bubble) | Private (org access required) |
+| [odoo](./odoo) | Odoo ERP | [lomiafrica/odoo](https://github.com/lomiafrica/odoo) | Private (org access required) |
 
-Because this repository uses submodules for each integration, ensure you use the `--recursive` flag when cloning to fetch the source code for all available platforms.
+### Integration references (in this repo)
+
+These live at the repository root (not submodules). Use them as copy-paste examples for merchants and partners:
+
+- **[direct-charge-integration-reference](./direct-charge-integration-reference)**: Direct charges (`POST /charge/*`) with Payment Elements for cards.
+- **[payment-integration-reference](./payment-integration-reference)**: Hosted checkout sessions via the raw HTTP API.
+- **[payment-integration-sdk-reference](./payment-integration-sdk-reference)**: Hosted checkout sessions with `@lomi./sdk` and `@lomi./embed`.
+
+## Installation and cloning
+
+Use `--recursive` when cloning so submodule checkouts are initialized:
 
 ```bash
-git clone --recursive https://github.com/lomiafrica/plugins-lomiafrica.git
+git clone --recursive https://github.com/lomiafrica/plugins.git
+cd plugins
 ```
 
-If you have already cloned the repository without the recursive flag, you can initialize the submodules with:
+If you already cloned without submodules:
 
 ```bash
 git submodule update --init --recursive
 ```
 
-*(Note: If you encounter a "repository not found" error on certain submodules, those specific repositories might currently be private or under development.)*
+If a submodule fails with "repository not found", that platform repo is private — request access from the lomi. team. WooCommerce, PrestaShop, and Magento submodules are public.
 
-## End-to-End (E2E) Tests and Scripts
+## End-to-end tests and scripts
 
-This repository also includes shared scripts to ensure the quality and compliance of the plugins:
+- **[E2E.md](./E2E.md)**: Manual smoke matrix per platform (checkout, webhooks, abandon flows, release tags).
+- **[scripts/verify-lomi-plugins.sh](./scripts/verify-lomi-plugins.sh)**: Static compliance gate (API contract, `integration_source`, XOF amounts, legacy brand checks, webhook patterns).
+- **[scripts/scan_broken_images.py](./scripts/scan_broken_images.py)**: Scans Magento, PrestaShop, and Woo trees for broken image path references.
 
-- **`E2E.md`**: Contains the matrix and checklist for manual or automated tests to validate payment behaviors, webhooks, and cart recovery across platforms.
-- **`scripts/verify-lomi-plugins.sh`**: A Bash script acting as a static gate to validate the codebase compliance of the different plugins (endpoint verification, legacy brand reference checks, XOF currency handling, etc.).
-- **`scripts/scan_broken_images.py`**: A Python script that scans the plugin directories to detect dead or broken image links.
-
-To run the static verification checks, execute:
+Run the static gate from the repository root:
 
 ```bash
 ./scripts/verify-lomi-plugins.sh
@@ -47,10 +58,12 @@ To run the static verification checks, execute:
 
 ## Contributing
 
-Contributions, bug reports, and Pull Requests are welcome.
-- For platform-specific modifications, please navigate to the corresponding submodule directory and apply your changes there.
-- Ensure that all verification scripts in the `./scripts` directory pass before submitting a Pull Request.
+Pull requests and issue reports are welcome.
+
+- **Platform plugin changes**: work inside the relevant submodule, push to that submodule's repo, then update the submodule pointer here if needed.
+- **Reference app or shared script changes**: edit files directly in this repository (`direct-charge-integration-reference`, `payment-integration-reference`, `payment-integration-sdk-reference`, `scripts/`, `E2E.md`).
+- Run `./scripts/verify-lomi-plugins.sh` before opening a PR.
 
 ## License
 
-Please review the `LICENSE` file within each submodule for platform-specific licensing information (for example, GPL-2.0+ for WooCommerce).
+Licensing is per platform. Check each submodule's README and license files (for example, Magento includes a root `LICENSE`). Reference projects in this repo follow the license stated in their respective directories.

@@ -1,6 +1,6 @@
 # EduPay × lomi. Connector
 
-Partner integration for [Yele Group](https://www.yelegroup.africa/) **EduPay** — school fee collection via lomi. **direct charges**, with a progressive path from **normal merchant** (Phase 1) to **lomi. Network** (Phase 2).
+Partner integration for [Yele Group](https://www.yelegroup.africa/) **EduPay** — school fee collection via lomi. **direct charges** on a single merchant account.
 
 Built on the same patterns as [`direct-charge-integration-reference`](../direct-charge-integration-reference).
 
@@ -12,12 +12,7 @@ EduPay backend  →  connector-api  →  @edupay/lomi-client  →  lomi. API
                    webhooks (PAYMENT_SUCCEEDED)
 ```
 
-| Phase | lomi role | Routing |
-| --- | --- | --- |
-| **1 — Normal** | Single merchant API key | `school_id` in metadata only |
-| **2 — Network** | EduPay = Operator, schools = `acct_...` | `Lomi-Account` header per school registry |
-
-Same charge endpoints in both phases. Phase 2 is a **per-school feature flag** in `data/schools.json`, not a rewrite.
+EduPay uses **one lomi merchant organization**. Schools are logical records in EduPay (`school_id` in charge metadata); settlement and reconciliation stay on that merchant account.
 
 ## Quick start
 
@@ -26,7 +21,6 @@ cd apps/plugins/lomi-edupay-connector
 pnpm install
 cp .env.example .env
 # Edit .env — sandbox keys from dashboard.lomi.africa
-cp data/schools.example.json data/schools.json
 pnpm run dev
 ```
 
@@ -34,7 +28,7 @@ Open **http://localhost:3010** for the sandbox UI.
 
 ```bash
 chmod +x curl/*.sh
-./curl/charge-fee-phase1.sh
+./curl/charge-fee.sh
 ```
 
 ## API (EduPay-facing)
@@ -54,37 +48,27 @@ chmod +x curl/*.sh
 | `customer_phone` | Yes | E.164 phone |
 | `customer_email` | Card only | Required for card rail |
 
-Response includes `edupay.lomi_mode` (`merchant` | `network`) and `member_account_id` when applicable.
-
 ### `POST /api/webhooks/lomi`
 
 lomi webhook receiver with signature verification. Set `EDUPAY_WEBHOOK_FORWARD_URL` to proxy events to EduPay core.
-
-### `GET /api/schools`
-
-Lists schools from the registry and their Network status.
 
 ## Packages
 
 | Path | Purpose |
 | --- | --- |
-| `packages/lomi-client` | Shared client — idempotency, metadata, `Lomi-Account` resolution |
+| `packages/lomi-client` | Shared client — idempotency, metadata, direct charge helpers |
 | `server/` | Connector API (BFF) — never expose `LOMI_API_KEY` to browsers |
-| `data/schools.json` | `school_id` → `acct_...` mapping for Phase 2 |
-| `docs/` | Phase guides, metadata contract, webhooks |
+| `docs/` | Integration guide, metadata contract, webhooks |
 
 ## Documentation
 
-- [Phase 1 — Normal merchant](./docs/01-phase-1-normal.md)
-- [Phase 2 — Network](./docs/02-phase-2-network.md)
+- [Integration guide](./docs/integration.md)
 - [Metadata contract](./docs/metadata-contract.md)
 - [Webhook events](./docs/webhook-events.md)
 
 ## External references
 
 - [Direct charges](https://docs.lomi.africa/build/direct-charges)
-- [lomi. Network](https://docs.lomi.africa/resources/network)
-- [Network onboarding journey](https://docs.lomi.africa/resources/network/onboarding-journey)
 
 ## Extracting to a standalone repo
 

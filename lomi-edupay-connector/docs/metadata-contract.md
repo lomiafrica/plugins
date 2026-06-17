@@ -1,6 +1,6 @@
 # EduPay metadata contract
 
-All charges MUST include these fields so EduPay can reconcile across Phase 1 and Phase 2.
+All charges MUST include these fields so EduPay can reconcile payments.
 
 ## Required on every fee payment
 
@@ -46,18 +46,3 @@ Prefer, in order:
 1. `payload.data.metadata.payment_reference` (card)
 2. `payload.data.metadata.school_id` + amount + timestamp
 3. Parse `description` for Wave/MTN until metadata is extended on those rails
-
-## Phase 2 additions
-
-When Network is active, responses include:
-
-```json
-{
-  "edupay": {
-    "lomi_mode": "network",
-    "member_account_id": "acct_..."
-  }
-}
-```
-
-Store `member_account_id` on webhook payloads when present for operator reporting.

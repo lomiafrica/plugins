@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
-# Phase 1 — normal merchant (no Lomi-Account header)
 set -euo pipefail
 
-LOMI_BASE_URL="${LOMI_BASE_URL:-https://sandbox.api.lomi.africa}"
-LOMI_API_KEY="${LOMI_API_KEY:?Set LOMI_API_KEY}"
 CONNECTOR_URL="${CONNECTOR_URL:-http://localhost:3010}"
 
 curl -sS -X POST "${CONNECTOR_URL}/api/v1/fees/charge" \

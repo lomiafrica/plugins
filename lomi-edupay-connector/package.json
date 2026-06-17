@@ -2,7 +2,7 @@
   "name": "lomi-edupay-connector",
   "version": "0.1.0",
   "private": true,
-  "description": "EduPay × lomi. connector — direct charges with normal → Network migration path",
+  "description": "EduPay × lomi. connector — direct charges for school fee collection",
   "main": "server/index.js",
   "packageManager": "pnpm@9.15.5",
   "engines": {

@@ -16,15 +16,12 @@ const lomiPublishableKey =
   process.env.LOMI_PUBLISHABLE_KEY || process.env.LOMI_PUBLIC_KEY || "";
 const webhookSecret =
   process.env.LOMI_WEBHOOK_SECRET || process.env.LOMI_WEBHOOK_VERIFICATION_TOKEN || "";
-const schoolRegistryPath =
-  process.env.SCHOOL_REGISTRY_PATH || path.join(__dirname, "..", "data", "schools.example.json");
 const edupayForwardUrl = process.env.EDUPAY_WEBHOOK_FORWARD_URL || "";
 
 const lomi = lomiApiKey
   ? createEduPayLomiClient({
       apiKey: lomiApiKey,
       baseUrl: lomiBaseUrl,
-      registryPath: schoolRegistryPath,
     })
   : null;
 
@@ -119,7 +116,6 @@ app.get("/api/health", (_req, res) => {
     ok: true,
     service: "lomi-edupay-connector",
     lomi_base_url: lomiBaseUrl,
-    school_registry_path: schoolRegistryPath,
     configured: {
       lomi_api_key: Boolean(lomiApiKey),
       lomi_publishable_key: Boolean(lomiPublishableKey),
@@ -135,10 +131,6 @@ app.get("/api/config", (_req, res) => {
     lomi_base_url: lomiBaseUrl,
     app_base_url: appBaseUrl,
   });
-});
-
-app.get("/api/schools", requireLomi, (_req, res) => {
-  res.json({ schools: lomi.schools ? lomi.schools.listSchools() : [] });
 });
 
 app.post("/api/v1/fees/charge", requireLomi, async (req, res) => {
@@ -158,15 +150,11 @@ app.post("/api/v1/fees/charge", requireLomi, async (req, res) => {
       return res.status(400).json({ error: "rail must be wave, mtn, or card" });
     }
 
-    const network = lomi.resolveNetworkContext(input.metadata);
-
     return res.status(result.status).json({
       ...result.data,
       edupay: {
         payment_reference: input.payment_reference,
         school_id: input.metadata.school_id,
-        lomi_mode: network.mode,
-        member_account_id: network.memberAccountId ?? null,
       },
     });
   } catch (error) {
@@ -176,11 +164,7 @@ app.post("/api/v1/fees/charge", requireLomi, async (req, res) => {
 
 app.get("/api/charge/card/:id", requireLomi, async (req, res) => {
   try {
-    const schoolId = String(req.query.school_id || "").trim();
-    const memberAccountId = schoolId && lomi.schools
-      ? lomi.schools.resolveMemberAccountId(schoolId)
-      : undefined;
-    const result = await lomi.getCardCharge(req.params.id, memberAccountId);
+    const result = await lomi.getCardCharge(req.params.id);
     return res.status(result.status).json(result.data);
   } catch (error) {
     return res.status(400).json({ error: error.message });
@@ -257,5 +241,4 @@ app.get("/api/webhooks/events", (_req, res) => {
 app.listen(port, () => {
   console.log(`EduPay × lomi. connector running on ${appBaseUrl}`);
   console.log(`lomi base URL: ${lomiBaseUrl}`);
-  console.log(`School registry: ${schoolRegistryPath}`);
 });

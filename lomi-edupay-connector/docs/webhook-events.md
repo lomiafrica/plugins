@@ -1,6 +1,6 @@
 # Webhook events
 
-Register in the lomi dashboard (Operator org in Phase 2):
+Register in the lomi dashboard:
 
 `https://your-connector-host/api/webhooks/lomi`
 
@@ -23,7 +23,7 @@ Always verify `X-Lomi-Signature` (HMAC-SHA256 of raw body with `LOMI_WEBHOOK_SEC
 
 Parents may close the browser before MoMo confirms. Fulfillment must be webhook- or poll-driven:
 
-`GET /transactions/{id}` with `Lomi-Account` when in Network mode.
+`GET /transactions/{id}`
 
 ## Local debugging
 

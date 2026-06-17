@@ -2,7 +2,7 @@
   "name": "@edupay/lomi-client",
   "version": "0.1.0",
   "private": true,
-  "description": "lomi. API client for EduPay — normal merchant and Network (Lomi-Account) modes",
+  "description": "lomi. API client for EduPay — direct charges on a single merchant account",
   "main": "index.js",
   "type": "commonjs"
 }

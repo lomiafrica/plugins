@@ -1,28 +1,4 @@
-const { createSchoolRegistry } = require("./school-registry");
-
 const DEFAULT_BASE_URL = "https://sandbox.api.lomi.africa";
-
-/**
- * @typedef {Object} EduPayFeeMetadata
- * @property {string} school_id
- * @property {string} student_id
- * @property {string} fee_code
- * @property {string} [term_id]
- * @property {string} [integration_source]
- */
-
-/**
- * @typedef {Object} EduPayChargeInput
- * @property {number} amount
- * @property {string} [currency]
- * @property {string} payment_reference
- * @property {EduPayFeeMetadata} metadata
- * @property {{ name: string; email?: string; phone: string }} customer
- * @property {string} [description]
- * @property {string} [success_url]
- * @property {string} [error_url]
- * @property {string} [country_code]
- */
 
 function buildIdempotencyKey(paymentReference) {
   const ref = String(paymentReference).trim();
@@ -46,16 +22,9 @@ function mergeCardMetadata(input) {
   };
 }
 
-/**
- * @param {Object} options
- * @param {string} options.apiKey
- * @param {string} [options.baseUrl]
- * @param {(schoolId: string) => string | undefined} [options.resolveMemberAccountId]
- */
 function createLomiClient(options) {
   const baseUrl = (options.baseUrl || DEFAULT_BASE_URL).replace(/\/$/, "");
   const apiKey = options.apiKey;
-  const resolveMemberAccountId = options.resolveMemberAccountId ?? (() => undefined);
 
   if (!apiKey) {
     throw new Error("LOMI_API_KEY is required to create lomi client");
@@ -66,11 +35,6 @@ function createLomiClient(options) {
       "Content-Type": "application/json",
       "X-API-KEY": apiKey,
     };
-
-    const memberAccountId = requestOptions.memberAccountId;
-    if (memberAccountId) {
-      headers["Lomi-Account"] = memberAccountId;
-    }
 
     if (requestOptions.idempotencyKey) {
       headers["Idempotency-Key"] = requestOptions.idempotencyKey;
@@ -96,20 +60,7 @@ function createLomiClient(options) {
     return { status: response.status, data };
   }
 
-  function resolveNetworkContext(metadata) {
-    const schoolId = metadata?.school_id;
-    if (!schoolId) {
-      return { memberAccountId: undefined, mode: "merchant" };
-    }
-    const memberAccountId = resolveMemberAccountId(schoolId);
-    return {
-      memberAccountId,
-      mode: memberAccountId ? "network" : "merchant",
-    };
-  }
-
   async function createWaveCharge(input, extra = {}) {
-    const { memberAccountId, mode } = resolveNetworkContext(input.metadata);
     const payload = {
       amount: input.amount,
       currency: input.currency || "XOF",
@@ -123,17 +74,13 @@ function createLomiClient(options) {
       errorUrl: input.error_url,
     };
 
-    const result = await request("POST", "/charge/wave", payload, {
-      memberAccountId,
+    return request("POST", "/charge/wave", payload, {
       idempotencyKey: buildIdempotencyKey(input.payment_reference),
       scenarioKey: extra.scenarioKey,
     });
-
-    return { ...result, lomi_mode: mode, member_account_id: memberAccountId ?? null };
   }
 
   async function createMtnCharge(input, extra = {}) {
-    const { memberAccountId, mode } = resolveNetworkContext(input.metadata);
     const payload = {
       amount: input.amount,
       currency: input.currency || "XOF",
@@ -147,17 +94,13 @@ function createLomiClient(options) {
       quantity: 1,
     };
 
-    const result = await request("POST", "/charge/mtn", payload, {
-      memberAccountId,
+    return request("POST", "/charge/mtn", payload, {
       idempotencyKey: buildIdempotencyKey(input.payment_reference),
       scenarioKey: extra.scenarioKey,
     });
-
-    return { ...result, lomi_mode: mode, member_account_id: memberAccountId ?? null };
   }
 
   async function createCardCharge(input) {
-    const { memberAccountId, mode } = resolveNetworkContext(input.metadata);
     const email = String(input.customer.email || "").trim();
     const name = String(input.customer.name || "").trim();
 
@@ -176,24 +119,17 @@ function createLomiClient(options) {
       metadata: mergeCardMetadata(input),
     };
 
-    const result = await request("POST", "/charge/card", payload, {
-      memberAccountId,
+    return request("POST", "/charge/card", payload, {
       idempotencyKey: buildIdempotencyKey(input.payment_reference),
     });
-
-    return { ...result, lomi_mode: mode, member_account_id: memberAccountId ?? null };
   }
 
-  async function getCardCharge(chargeId, memberAccountId) {
-    return request("GET", `/charge/card/${encodeURIComponent(chargeId)}`, undefined, {
-      memberAccountId,
-    });
+  async function getCardCharge(chargeId) {
+    return request("GET", `/charge/card/${encodeURIComponent(chargeId)}`);
   }
 
-  async function getTransaction(transactionId, memberAccountId) {
-    return request("GET", `/transactions/${encodeURIComponent(transactionId)}`, undefined, {
-      memberAccountId,
-    });
+  async function getTransaction(transactionId) {
+    return request("GET", `/transactions/${encodeURIComponent(transactionId)}`);
   }
 
   return {
@@ -202,29 +138,11 @@ function createLomiClient(options) {
     createCardCharge,
     getCardCharge,
     getTransaction,
-    resolveNetworkContext,
   };
 }
 
-/**
- * Factory with school registry wired in.
- */
 function createEduPayLomiClient(options) {
-  const registry = options.registryPath
-    ? createSchoolRegistry(options.registryPath)
-    : null;
-
-  const client = createLomiClient({
-    apiKey: options.apiKey,
-    baseUrl: options.baseUrl,
-    resolveMemberAccountId: (schoolId) =>
-      registry ? registry.resolveMemberAccountId(schoolId) : undefined,
-  });
-
-  return {
-    ...client,
-    schools: registry,
-  };
+  return createLomiClient(options);
 }
 
 module.exports = {

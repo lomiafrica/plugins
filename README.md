@@ -47,6 +47,7 @@ If a submodule fails with "repository not found", that platform repo is private 
 
 ## End-to-end tests and scripts
 
+- **[DEV-ENV.md](./DEV-ENV.md)**: Local dev setup (Docker, Cloudflare Tunnel, sandbox keys) — **start here for new contributors**.
 - **[E2E.md](./E2E.md)**: Manual smoke matrix per platform (checkout, webhooks, abandon flows, release tags).
 - **[scripts/verify-lomi-plugins.sh](./scripts/verify-lomi-plugins.sh)**: Static compliance gate (API contract, `integration_source`, XOF amounts, legacy brand checks, webhook patterns).
 - **[scripts/scan_broken_images.py](./scripts/scan_broken_images.py)**: Scans Magento, PrestaShop, and Woo trees for broken image path references.

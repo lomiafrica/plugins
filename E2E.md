@@ -13,7 +13,7 @@ Manual checklist per platform. Run in **test mode** first, then repeat critical 
 | Test/live toggle | API base + webhook secret switch together |
 | Abandon | Back from hosted checkout restores cart / pending order |
 
-Automated static gate: `./scripts/verify-lomi-plugins.sh`
+Automated suite: `./scripts/run-plugin-tests.sh` (static parity + webhook contract + Woo zip). Static-only: `./scripts/run-plugin-tests.sh --fast`
 
 ---
 

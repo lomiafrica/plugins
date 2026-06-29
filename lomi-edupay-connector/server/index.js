@@ -32,7 +32,7 @@ app.use(
     },
   }),
 );
-app.use(cors());
+app.use(cors({ origin: appBaseUrl }));
 app.use(express.static(path.join(__dirname, "..", "frontend")));
 
 const webhookEvents = [];
@@ -234,7 +234,11 @@ app.post("/api/webhooks/lomi", async (req, res) => {
   return res.status(200).json({ ok: true });
 });
 
-app.get("/api/webhooks/events", (_req, res) => {
+app.get("/api/webhooks/events", (req, res) => {
+  const token = process.env.ADMIN_TOKEN;
+  if (token && req.get("Authorization") !== `Bearer ${token}`) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
   res.json({ count: webhookEvents.length, events: webhookEvents });
 });
 

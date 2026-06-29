@@ -47,14 +47,22 @@ If a submodule fails with "repository not found", that platform repo is private 
 
 ## End-to-end tests and scripts
 
+- **[DEV-ENV.md](./DEV-ENV.md)**: Local dev setup (Docker, Cloudflare Tunnel, sandbox keys) — **start here for new contributors**.
 - **[E2E.md](./E2E.md)**: Manual smoke matrix per platform (checkout, webhooks, abandon flows, release tags).
-- **[scripts/verify-lomi-plugins.sh](./scripts/verify-lomi-plugins.sh)**: Static compliance gate (API contract, `integration_source`, XOF amounts, legacy brand checks, webhook patterns).
+- **[scripts/run-plugin-tests.sh](./scripts/run-plugin-tests.sh)**: **Automated CI suite** — static parity, webhook contract, Bubble JSON, Woo build + release zip.
+- **[scripts/verify-lomi-plugins.sh](./scripts/verify-lomi-plugins.sh)**: Static compliance gate (also run as step 1 of `run-plugin-tests.sh`).
 - **[scripts/scan_broken_images.py](./scripts/scan_broken_images.py)**: Scans Magento, PrestaShop, and Woo trees for broken image path references.
 
-Run the static gate from the repository root:
+Run the full automated suite from the repository root (requires Node 22+, pnpm 9+, `unzip`):
 
 ```bash
-./scripts/verify-lomi-plugins.sh
+./scripts/run-plugin-tests.sh
+```
+
+Static checks only (no Woo `pnpm build`):
+
+```bash
+./scripts/run-plugin-tests.sh --fast
 ```
 
 ## Contributing
@@ -63,7 +71,7 @@ Pull requests and issue reports are welcome.
 
 - **Platform plugin changes**: work inside the relevant submodule, push to that submodule's repo, then update the submodule pointer here if needed.
 - **Reference app or shared script changes**: edit files directly in this repository (`direct-charge-integration-reference`, `payment-integration-reference`, `payment-integration-sdk-reference`, `scripts/`, `E2E.md`).
-- Run `./scripts/verify-lomi-plugins.sh` before opening a PR.
+- Run `./scripts/run-plugin-tests.sh` before opening a PR (`--fast` if Woo assets are unchanged).
 
 ## License
 

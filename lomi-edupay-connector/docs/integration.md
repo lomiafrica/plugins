@@ -5,7 +5,7 @@ EduPay uses **one lomi merchant organization** (Yele Group or EduPay entity). Al
 ## Setup
 
 1. Create a lomi sandbox account and complete KYC when going live.
-2. Copy `.env.example` → `.env` and set `LOMI_API_KEY` (secret), `LOMI_PUBLISHABLE_KEY`, `LOMI_WEBHOOK_SECRET`.
+2. Copy `.env.example` → `.env` and set `LOMI_SECRET_KEY` (secret), `LOMI_PUBLISHABLE_KEY`, `LOMI_WEBHOOK_SECRET`.
 3. Point dashboard webhooks to `https://your-connector/api/webhooks/lomi`.
 
 ## Charge a fee

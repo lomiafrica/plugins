@@ -99,7 +99,7 @@ Optional runtime verify:
 Local helpers:
 
 ```bash
-LOMI_API_KEY=lomi_sk_test_... node apps/plugins/bubble/scripts/smoke-test.mjs
+LOMI_SECRET_KEY=lomi_sk_test_... node apps/plugins/bubble/scripts/smoke-test.mjs
 apps/plugins/scripts/verify-lomi-plugins.sh
 ```
 

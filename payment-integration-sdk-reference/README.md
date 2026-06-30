@@ -25,7 +25,7 @@ Open `http://localhost:3001`.
 
 ```env
 LOMI_BASE_URL=https://sandbox.api.lomi.africa
-LOMI_API_KEY=lomi_sk_test_...
+LOMI_SECRET_KEY=lomi_sk_test_...
 LOMI_WEBHOOK_SECRET=whsec_...
 LOMI_PUBLIC_KEY=lomi_pk_test_...
 ```
@@ -52,7 +52,7 @@ Use this local route from the demo frontend instead of hardcoding external scrip
 
 ## Production notes
 
-- Keep `LOMI_API_KEY` server-side only
+- Keep `LOMI_SECRET_KEY` server-side only
 - Send `Idempotency-Key` on session creates when retries matter; replay responses include `Idempotency-Cache-Hit: true`
 - Verify webhook signatures before processing
 - Persist + dedupe webhook events by ID in your database

@@ -27,7 +27,7 @@ function createLomiClient(options) {
   const apiKey = options.apiKey;
 
   if (!apiKey) {
-    throw new Error("LOMI_API_KEY is required to create lomi client");
+    throw new Error("LOMI_SECRET_KEY is required to create lomi client");
   }
 
   async function request(method, routePath, body, requestOptions = {}) {

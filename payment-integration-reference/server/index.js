@@ -11,7 +11,7 @@ const port = 3000;
 const appBaseUrl = "http://localhost:3000";
 const checkoutBaseUrl = "https://checkout.lomi.africa";
 const lomiBaseUrl = process.env.LOMI_BASE_URL || "https://api.lomi.africa";
-const lomiApiKey = process.env.LOMI_API_KEY;
+const lomiApiKey = process.env.LOMI_SECRET_KEY;
 const webhookSecret =
   process.env.LOMI_WEBHOOK_SECRET || process.env.LOMI_WEBHOOK_VERIFICATION_TOKEN || "";
 
@@ -63,7 +63,7 @@ function normalizeCheckoutUrl(data) {
 
 async function createCheckoutSession(payload) {
   if (!lomiApiKey) {
-    throw new Error("LOMI_API_KEY is missing. Set it in .env.");
+    throw new Error("LOMI_SECRET_KEY is missing. Set it in .env.");
   }
 
   const response = await fetch(`${lomiBaseUrl}/checkout-sessions`, {

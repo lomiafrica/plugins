@@ -32,12 +32,12 @@ Open `http://localhost:3002`.
 
 ```env
 LOMI_BASE_URL=https://sandbox.api.lomi.africa
-LOMI_API_KEY=lomi_sk_test_...
+LOMI_SECRET_KEY=lomi_sk_test_...
 LOMI_PUBLISHABLE_KEY=lomi_pk_test_...
 LOMI_WEBHOOK_SECRET=whsec_...
 ```
 
-- **`LOMI_API_KEY`** — secret key, server-side only (`X-API-KEY` header).
+- **`LOMI_SECRET_KEY`** — secret key, server-side only (`X-API-KEY` header).
 - **`LOMI_PUBLISHABLE_KEY`** — publishable key for `@lomi./sdk` on the client (`lomi_pk_...`). Also accepts `LOMI_PUBLIC_KEY`.
 - Use **sandbox** URLs and **test** keys while integrating.
 
@@ -73,14 +73,14 @@ Without this, lomi cannot tie the payment intent to an internal customer/transac
 chmod +x curl/*.sh
 
 LOMI_BASE_URL=https://sandbox.api.lomi.africa \
-LOMI_API_KEY=lomi_sk_test_... \
+LOMI_SECRET_KEY=lomi_sk_test_... \
 ./curl/create-wave-charge.sh
 
-LOMI_API_KEY=lomi_sk_test_... ./curl/create-mtn-charge.sh
+LOMI_SECRET_KEY=lomi_sk_test_... ./curl/create-mtn-charge.sh
 
-LOMI_API_KEY=lomi_sk_test_... ./curl/create-card-charge.sh
+LOMI_SECRET_KEY=lomi_sk_test_... ./curl/create-card-charge.sh
 
-PAYMENT_INTENT_ID=pi_... LOMI_API_KEY=lomi_sk_test_... ./curl/get-card-charge.sh
+PAYMENT_INTENT_ID=pi_... LOMI_SECRET_KEY=lomi_sk_test_... ./curl/get-card-charge.sh
 ```
 
 Or hit this demo server's proxy routes (after `pnpm run dev`):
@@ -91,7 +91,7 @@ Or hit this demo server's proxy routes (after `pnpm run dev`):
 
 ## Production notes
 
-- Keep `LOMI_API_KEY` server-side only.
+- Keep `LOMI_SECRET_KEY` server-side only.
 - Treat `client_secret` as a short-lived capability — never log it or expose it in URLs.
 - Confirm final payment state via **webhooks** or `GET /charge/card/{id}`.
 - Wave/MTN responses are **async** — show pending UI until webhook or status poll.

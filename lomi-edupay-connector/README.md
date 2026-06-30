@@ -57,7 +57,7 @@ lomi webhook receiver with signature verification. Set `EDUPAY_WEBHOOK_FORWARD_U
 | Path | Purpose |
 | --- | --- |
 | `packages/lomi-client` | Shared client — idempotency, metadata, direct charge helpers |
-| `server/` | Connector API (BFF) — never expose `LOMI_API_KEY` to browsers |
+| `server/` | Connector API (BFF) — never expose `LOMI_SECRET_KEY` to browsers |
 | `docs/` | Integration guide, metadata contract, webhooks |
 
 ## Documentation

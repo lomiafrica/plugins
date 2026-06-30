@@ -11,7 +11,7 @@ const app = express();
 const port = Number(process.env.PORT || 3010);
 const appBaseUrl = process.env.APP_BASE_URL || `http://localhost:${port}`;
 const lomiBaseUrl = process.env.LOMI_BASE_URL || "https://sandbox.api.lomi.africa";
-const lomiApiKey = process.env.LOMI_API_KEY;
+const lomiApiKey = process.env.LOMI_SECRET_KEY;
 const lomiPublishableKey =
   process.env.LOMI_PUBLISHABLE_KEY || process.env.LOMI_PUBLIC_KEY || "";
 const webhookSecret =
@@ -45,7 +45,7 @@ function toNumber(value) {
 
 function requireLomi(_req, res, next) {
   if (!lomi) {
-    return res.status(500).json({ error: "LOMI_API_KEY is not configured" });
+    return res.status(500).json({ error: "LOMI_SECRET_KEY is not configured" });
   }
   return next();
 }

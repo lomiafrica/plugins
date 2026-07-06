@@ -55,6 +55,23 @@ docker compose up -d
 | Blocks checkout | Same card in Woo Blocks payment method (rebuild `blocks.js` after JS changes) |
 | No duplicate title | Default “lomi.” title hidden when branding card is active |
 | Responsive | Card spans full payment row width; icons do not overflow on mobile |
+| Radio alignment (Blocks) | Radio does not overlap “Pay with” text; label sits in second grid column |
+| Icon tiles | Each method icon has visible border/background on light themes |
+
+### Theme compatibility matrix
+
+Run after CSS or checkout-label changes. Use **block checkout** unless the row says classic.
+
+| Theme | WC version | Checkout | Branding card | Radio row | Notes |
+|-------|------------|----------|---------------|-----------|-------|
+| Storefront | 9.6+ | Blocks | ☐ | ☐ | Woo default reference |
+| Storefront | 9.6+ | Classic | ☐ | ☐ | `#order_review` shortcode page |
+| Twenty Twenty-Four | 9.6+ | Blocks | ☐ | ☐ | Block theme / FSE |
+| Merchant theme (fill in) | | Blocks | ☐ | ☐ | e.g. Astra, custom |
+
+**Pass:** branding card readable; radio aligned; icon tiles bordered; no horizontal overflow at 375px width.
+
+**If fail on merchant theme only:** theme CSS conflict — document theme + selector in issue; compare with Storefront.
 
 ### Payment flow
 

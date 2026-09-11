@@ -20,5 +20,14 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2"
+  },
+  "pnpm": {
+    "overrides": {
+      "axios": "1.20.0",
+      "form-data": "4.0.6",
+      "qs": "6.16.0",
+      "body-parser": "1.20.8",
+      "esbuild": "0.28.2"
+    }
   }
 }
